@@ -1,0 +1,192 @@
+Prompt: Full-Stack AI Finance Platform (Step-by-Step Build Plan)
+
+Goal:
+Build a Full-Stack AI Finance Platform in Node.js (TypeScript) + React (TypeScript) that:
+
+Tracks income & expenses across multiple accounts
+
+Supports AI smart categorization & personalized insights
+
+Allows receipt scanning (OCR)
+
+Has a budget management system with email alerts
+
+Offers interactive charts & reports
+
+Sends monthly AI-powered reports via email
+
+Tech Stack
+
+Backend:
+
+Node.js + Express (TypeScript)
+
+PostgreSQL + Drizzle ORM (type-safe migrations & queries)
+
+Passport.js (JWT authentication)
+
+Argon2 (password hashing)
+
+Helmet, CORS, rate limiting (security)
+
+WebSocket (ws) for real-time updates
+
+Nodemailer (email sending)
+
+Tesseract.js (OCR for receipts)
+
+AI text processing for categorization & summaries
+
+Frontend:
+
+React + Vite (TypeScript)
+
+Tailwind CSS
+
+Recharts or Chart.js (charts & visualizations)
+
+Zustand or Redux (state management)
+
+Responsive design for mobile/tablet/desktop
+
+Step-by-Step Build Plan
+Step 1 – Backend Setup
+
+Initialize backend/ with TypeScript, ESLint, Prettier.
+
+Install dependencies:
+
+express, typescript, ts-node, dotenv, helmet, cors, express-rate-limit, ws, passport, passport-jwt, argon2, nodemailer, drizzle-orm, pg, tesseract.js
+
+
+Create folder structure:
+
+backend/src/config       # env, db config
+backend/src/models       # drizzle schemas
+backend/src/routes       # express routes
+backend/src/controllers  # route handlers
+backend/src/services     # ai, ocr, email
+backend/src/middleware   # auth, error handling
+backend/src/utils        # helpers
+
+
+Setup .env handling for database URL, JWT secret, SMTP credentials.
+
+Configure PostgreSQL + Drizzle ORM connection and migration system.
+
+Step 2 – Authentication & Security
+
+Implement JWT authentication with Passport.js.
+
+Add user registration & login routes.
+
+Hash passwords with Argon2.
+
+Apply Helmet, CORS, rate limiting.
+
+Write tests for auth endpoints.
+
+Step 3 – Core Finance Features (Backend)
+
+Create models for User, Account, Transaction, Budget, Receipt.
+
+Implement CRUD endpoints for accounts & transactions.
+
+Implement AI-powered transaction categorization (basic keyword + ML model placeholder).
+
+Implement budget tracking with alerts when near limit.
+
+Add WebSocket broadcasting for real-time transaction updates.
+
+Step 4 – Receipt Scanning (OCR)
+
+Add upload endpoint for receipts (Multer).
+
+Integrate Tesseract.js for OCR.
+
+Parse extracted text into structured transaction data.
+
+Step 5 – AI Reports & Emailing
+
+Create monthly report generator service.
+
+Use AI summarization to create personalized insights.
+
+Send PDF/email reports via Nodemailer.
+
+Step 6 – Frontend Setup
+
+Initialize frontend/ with React + Vite + TypeScript.
+
+Install dependencies:
+
+react-router-dom, tailwindcss, axios, recharts, zustand
+
+
+Configure Tailwind CSS.
+
+Create folder structure:
+
+frontend/src/components
+frontend/src/pages
+frontend/src/hooks
+frontend/src/store
+frontend/src/services
+
+Step 7 – Frontend Pages & Components
+
+Auth Pages: Login, Signup.
+
+Dashboard: Overview of income, expenses, balance.
+
+Transactions: List view, filters, category tags.
+
+Budgets: Create, edit, progress bar display.
+
+Receipts: Upload & preview with OCR results.
+
+Reports: Display AI monthly report & download PDF.
+
+Settings: Account linking, email preferences.
+
+Step 8 – Charts & Visualization
+
+Integrate Recharts/Chart.js for:
+
+Daily/Monthly expense trends
+
+Category spending breakdown
+
+Budget vs actual spend
+
+Make charts interactive & responsive.
+
+Step 9 – Real-time Updates
+
+Connect frontend to backend WebSocket.
+
+Update transactions & budget status instantly when new data is added.
+
+Step 10 – Final Polish
+
+Make fully responsive (Tailwind breakpoints).
+
+Add loading states, toasts, and error handling.
+
+Include Dockerfile + docker-compose for running DB + backend + frontend.
+
+Create .env.example and a README with setup instructions.
+
+Seed DB with mock data for testing.
+
+Expected Output from AI Tool
+
+Two separate folders: backend/ and frontend/
+
+Working authentication, finance tracking, AI categorization, OCR, budgeting, real-time updates, reports, and charts.
+
+Fully connected REST API + WebSocket communication.
+
+Pre-configured scripts for npm install and npm run dev in both backend and frontend.
+
+Ready to open and run in VS Code.
