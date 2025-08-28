@@ -1,0 +1,215 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0 0% 100%);
+  --foreground: hsl(210 25% 7.8431%);
+  --card: hsl(180 6.6667% 97.0588%);
+  --card-foreground: hsl(210 25% 7.8431%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(210 25% 7.8431%);
+  --primary: hsl(214 100% 47%);
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(159 100% 36%);
+  --secondary-foreground: hsl(0 0% 100%);
+  --muted: hsl(240 1.9608% 90%);
+  --muted-foreground: hsl(210 25% 7.8431%);
+  --accent: hsl(211.5789 51.3514% 92.7451%);
+  --accent-foreground: hsl(214 100% 47%);
+  --destructive: hsl(356.3033 90.5579% 54.3137%);
+  --destructive-foreground: hsl(0 0% 100%);
+  --border: hsl(201.4286 30.4348% 90.9804%);
+  --input: hsl(200 23.0769% 97.4510%);
+  --ring: hsl(214 100% 47%);
+  --chart-1: hsl(214 100% 47%);
+  --chart-2: hsl(159 100% 36%);
+  --chart-3: hsl(42.0290 92.8251% 56.2745%);
+  --chart-4: hsl(147.1429 78.5047% 41.9608%);
+  --chart-5: hsl(341.4894 75.2000% 50.9804%);
+  --sidebar: hsl(180 6.6667% 97.0588%);
+  --sidebar-foreground: hsl(210 25% 7.8431%);
+  --sidebar-primary: hsl(214 100% 47%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(211.5789 51.3514% 92.7451%);
+  --sidebar-accent-foreground: hsl(214 100% 47%);
+  --sidebar-border: hsl(205.0000 25.0000% 90.5882%);
+  --sidebar-ring: hsl(214 100% 47%);
+  --font-sans: Inter, sans-serif;
+  --font-serif: Georgia, serif;
+  --font-mono: Menlo, monospace;
+  --radius: 0.5rem;
+  --shadow-2xs: 0px 1px 2px 0px hsl(214 100% 47% / 0.05);
+  --shadow-xs: 0px 1px 2px 0px hsl(214 100% 47% / 0.05);
+  --shadow-sm: 0px 1px 2px 0px hsl(214 100% 47% / 0.05), 0px 1px 3px 0px hsl(214 100% 47% / 0.10);
+  --shadow: 0px 1px 2px 0px hsl(214 100% 47% / 0.05), 0px 1px 3px 0px hsl(214 100% 47% / 0.10);
+  --shadow-md: 0px 2px 4px -1px hsl(214 100% 47% / 0.10), 0px 4px 6px -1px hsl(214 100% 47% / 0.10);
+  --shadow-lg: 0px 4px 6px -1px hsl(214 100% 47% / 0.10), 0px 10px 15px -3px hsl(214 100% 47% / 0.10);
+  --shadow-xl: 0px 10px 25px -3px hsl(214 100% 47% / 0.10), 0px 20px 25px -5px hsl(214 100% 47% / 0.10);
+  --shadow-2xl: 0px 25px 50px -12px hsl(214 100% 47% / 0.25);
+  --tracking-normal: 0em;
+  --spacing: 0.25rem;
+  
+  /* Finance platform specific colors */
+  --success: hsl(159 100% 36%);
+  --warning: hsl(42 92% 56%);
+  --danger: hsl(356 91% 54%);
+  --info: hsl(214 100% 47%);
+}
+
+.dark {
+  --background: hsl(0 0% 0%);
+  --foreground: hsl(200 6.6667% 91.1765%);
+  --card: hsl(228 9.8039% 10%);
+  --card-foreground: hsl(0 0% 85.0980%);
+  --popover: hsl(0 0% 0%);
+  --popover-foreground: hsl(200 6.6667% 91.1765%);
+  --primary: hsl(214 100% 60%);
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(195.0000 15.3846% 94.9020%);
+  --secondary-foreground: hsl(210 25% 7.8431%);
+  --muted: hsl(0 0% 9.4118%);
+  --muted-foreground: hsl(210 3.3898% 46.2745%);
+  --accent: hsl(205.7143 70% 7.8431%);
+  --accent-foreground: hsl(214 100% 60%);
+  --destructive: hsl(356.3033 90.5579% 54.3137%);
+  --destructive-foreground: hsl(0 0% 100%);
+  --border: hsl(210 5.2632% 14.9020%);
+  --input: hsl(207.6923 27.6596% 18.4314%);
+  --ring: hsl(214 100% 47%);
+  --chart-1: hsl(214 100% 47%);
+  --chart-2: hsl(159 100% 36%);
+  --chart-3: hsl(42.0290 92.8251% 56.2745%);
+  --chart-4: hsl(147.1429 78.5047% 41.9608%);
+  --chart-5: hsl(341.4894 75.2000% 50.9804%);
+  --sidebar: hsl(228 9.8039% 10%);
+  --sidebar-foreground: hsl(0 0% 85.0980%);
+  --sidebar-primary: hsl(214 100% 47%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(205.7143 70% 7.8431%);
+  --sidebar-accent-foreground: hsl(214 100% 60%);
+  --sidebar-border: hsl(205.7143 15.7895% 26.0784%);
+  --sidebar-ring: hsl(214 100% 47%);
+  --font-sans: Inter, sans-serif;
+  --font-serif: Georgia, serif;
+  --font-mono: Menlo, monospace;
+  --radius: 0.5rem;
+  --shadow-2xs: 0px 1px 2px 0px hsl(214 100% 47% / 0.05);
+  --shadow-xs: 0px 1px 2px 0px hsl(214 100% 47% / 0.05);
+  --shadow-sm: 0px 1px 2px 0px hsl(214 100% 47% / 0.05), 0px 1px 3px 0px hsl(214 100% 47% / 0.10);
+  --shadow: 0px 1px 2px 0px hsl(214 100% 47% / 0.05), 0px 1px 3px 0px hsl(214 100% 47% / 0.10);
+  --shadow-md: 0px 2px 4px -1px hsl(214 100% 47% / 0.10), 0px 4px 6px -1px hsl(214 100% 47% / 0.10);
+  --shadow-lg: 0px 4px 6px -1px hsl(214 100% 47% / 0.10), 0px 10px 15px -3px hsl(214 100% 47% / 0.10);
+  --shadow-xl: 0px 10px 25px -3px hsl(214 100% 47% / 0.10), 0px 20px 25px -5px hsl(214 100% 47% / 0.10);
+  --shadow-2xl: 0px 25px 50px -12px hsl(214 100% 47% / 0.25);
+  
+  /* Finance platform specific colors for dark mode */
+  --success: hsl(159 100% 40%);
+  --warning: hsl(42 92% 60%);
+  --danger: hsl(356 91% 58%);
+  --info: hsl(214 100% 60%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
+}
+
+/* Loading animation */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Chart specific styles */
+.recharts-legend-wrapper {
+  padding-top: 10px !important;
+}
+
+.recharts-default-tooltip {
+  border-radius: var(--radius) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  background-color: hsl(var(--popover)) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+/* Finance platform specific utility classes */
+.text-success {
+  color: hsl(var(--success));
+}
+
+.text-warning {
+  color: hsl(var(--warning));
+}
+
+.text-danger {
+  color: hsl(var(--danger));
+}
+
+.text-info {
+  color: hsl(var(--info));
+}
+
+.bg-success {
+  background-color: hsl(var(--success));
+}
+
+.bg-warning {
+  background-color: hsl(var(--warning));
+}
+
+.bg-danger {
+  background-color: hsl(var(--danger));
+}
+
+.bg-info {
+  background-color: hsl(var(--info));
+}
+
+.border-success {
+  border-color: hsl(var(--success));
+}
+
+.border-warning {
+  border-color: hsl(var(--warning));
+}
+
+.border-danger {
+  border-color: hsl(var(--danger));
+}
+
+.border-info {
+  border-color: hsl(var(--info));
+}

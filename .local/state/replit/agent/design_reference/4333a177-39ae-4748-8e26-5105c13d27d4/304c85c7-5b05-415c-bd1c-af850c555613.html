@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinanceAI Pro - Personal Finance Management Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#059669',
+                        accent: '#dc2626',
+                        muted: '#6b7280',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 font-inter">
+    
+    <!-- @COMPONENT: Sidebar Navigation -->
+    <div class="flex h-screen bg-gray-50">
+        <!-- Sidebar -->
+        <div class="hidden lg:flex lg:w-64 lg:flex-col">
+            <div class="flex flex-col flex-grow pt-5 pb-4 overflow-y-auto bg-white border-r border-gray-200">
+                <!-- Logo -->
+                <div class="flex items-center flex-shrink-0 px-4">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                            <i class="fas fa-chart-line text-white text-sm"></i>
+                        </div>
+                        <span class="ml-3 text-xl font-bold text-gray-900">FinanceAI Pro</span>
+                    </div>
+                </div>
+                
+                <!-- Navigation -->
+                <nav class="mt-8 flex-1 px-2 space-y-2">
+                    <a href="#" class="bg-primary text-white group flex items-center px-2 py-2 text-sm font-medium rounded-md" data-page="dashboard">
+                        <i class="fas fa-home mr-3 text-sm"></i>
+                        Dashboard
+                    </a>
+                    <a href="#" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md" data-page="transactions">
+                        <i class="fas fa-exchange-alt mr-3 text-sm"></i>
+                        Transactions
+                    </a>
+                    <a href="#" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md" data-page="budgets">
+                        <i class="fas fa-bullseye mr-3 text-sm"></i>
+                        Budgets
+                    </a>
+                    <a href="#" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md" data-page="accounts">
+                        <i class="fas fa-university mr-3 text-sm"></i>
+                        Accounts
+                    </a>
+                    <a href="#" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md" data-page="receipts">
+                        <i class="fas fa-receipt mr-3 text-sm"></i>
+                        Receipts
+                    </a>
+                    <a href="#" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md" data-page="reports">
+                        <i class="fas fa-chart-bar mr-3 text-sm"></i>
+                        Reports
+                    </a>
+                    <a href="#" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md" data-page="settings">
+                        <i class="fas fa-cog mr-3 text-sm"></i>
+                        Settings
+                    </a>
+                </nav>
+                
+                <!-- User Profile -->
+                <div class="flex-shrink-0 flex border-t border-gray-200 p-4">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-gray-600 text-sm"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-900" data-bind="user.name">John Doe</p>
+                            <p class="text-xs text-gray-500" data-bind="user.email">john@example.com</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: Sidebar Navigation -->
+
+        <!-- Main Content -->
+        <div class="flex flex-col flex-1 overflow-hidden">
+            <!-- Mobile menu button -->
+            <div class="lg:hidden flex items-center justify-between p-4 bg-white border-b border-gray-200">
+                <h1 class="text-lg font-semibold text-gray-900">FinanceAI Pro</h1>
+                <button type="button" class="text-gray-500" data-event="click:toggleMobileMenu">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+
+            <!-- @COMPONENT: Dashboard Page -->
+            <main class="flex-1 overflow-y-auto" id="dashboard-page">
+                <div class="py-6">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <!-- Page Header -->
+                        <div class="mb-6">
+                            <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+                            <p class="text-gray-600">Welcome back! Here's your financial overview.</p>
+                        </div>
+
+                        <!-- Stats Cards -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            <div class="bg-white rounded-lg shadow p-6">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-dollar-sign text-white text-sm"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm text-gray-600">Total Balance</p>
+                                        <p class="text-2xl font-bold text-gray-900" data-bind="totalBalance">$12,485.50</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white rounded-lg shadow p-6">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 bg-success rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-arrow-up text-white text-sm"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm text-gray-600">Monthly Income</p>
+                                        <p class="text-2xl font-bold text-gray-900" data-bind="monthlyIncome">$5,240.00</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white rounded-lg shadow p-6">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 bg-danger rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-arrow-down text-white text-sm"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm text-gray-600">Monthly Expenses</p>
+                                        <p class="text-2xl font-bold text-gray-900" data-bind="monthlyExpenses">$3,890.25</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white rounded-lg shadow p-6">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 bg-warning rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-bullseye text-white text-sm"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm text-gray-600">Budget Remaining</p>
+                                        <p class="text-2xl font-bold text-gray-900" data-bind="budgetRemaining">$1,349.75</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Charts Section -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                            <!-- Expense Trends Chart -->
+                            <div class="bg-white rounded-lg shadow p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="text-lg font-semibold text-gray-900">Expense Trends</h3>
+                                    <select class="text-sm border border-gray-300 rounded-md px-3 py-1">
+                                        <option>Last 30 days</option>
+                                        <option>Last 90 days</option>
+                                        <option>Last 6 months</option>
+                                    </select>
+                                </div>
+                                <!-- @FUNCTIONALITY: Chart implementation using Recharts -->
+                                <div class="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
+                                    <div class="text-center">
+                                        <i class="fas fa-chart-line text-4xl text-gray-400 mb-2"></i>
+                                        <p class="text-gray-500">Expense trend chart placeholder</p>
+                                        <p class="text-xs text-gray-400 mt-1">Implement with Recharts LineChart</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Category Breakdown -->
+                            <div class="bg-white rounded-lg shadow p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="text-lg font-semibold text-gray-900">Spending by Category</h3>
+                                    <button class="text-sm text-primary hover:text-blue-700">View All</button>
+                                </div>
+                                <!-- @FUNCTIONALITY: Pie chart implementation using Recharts -->
+                                <div class="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
+                                    <div class="text-center">
+                                        <i class="fas fa-chart-pie text-4xl text-gray-400 mb-2"></i>
+                                        <p class="text-gray-500">Category breakdown chart placeholder</p>
+                                        <p class="text-xs text-gray-400 mt-1">Implement with Recharts PieChart</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Transactions and Quick Actions -->
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <!-- Recent Transactions -->
+                            <div class="lg:col-span-2 bg-white rounded-lg shadow">
+                                <div class="p-6 border-b border-gray-200">
+                                    <div class="flex items-center justify-between">
+                                        <h3 class="text-lg font-semibold text-gray-900">Recent Transactions</h3>
+                                        <button class="text-sm text-primary hover:text-blue-700" data-event="click:viewAllTransactions">View All</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="divide-y divide-gray-200">
+                                    <!-- @MAP: recentTransactions.map(transaction => ( -->
+                                    <div class="p-4 hover:bg-gray-50" data-mock="true">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center">
+                                                <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                                                    <i class="fas fa-shopping-cart text-red-600 text-sm"></i>
+                                                </div>
+                                                <div class="ml-3">
+                                                    <p class="text-sm font-medium text-gray-900" data-bind="transaction.description">Grocery Store</p>
+                                                    <p class="text-xs text-gray-500" data-bind="transaction.date">Today, 2:30 PM</p>
+                                                </div>
+                                            </div>
+                                            <div class="text-right">
+                                                <p class="text-sm font-medium text-red-600" data-bind="transaction.amount">-$45.67</p>
+                                                <p class="text-xs text-gray-500" data-bind="transaction.category">Groceries</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="p-4 hover:bg-gray-50" data-mock="true">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center">
+                                                <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                                                    <i class="fas fa-briefcase text-green-600 text-sm"></i>
+                                                </div>
+                                                <div class="ml-3">
+                                                    <p class="text-sm font-medium text-gray-900" data-bind="transaction.description">Salary Deposit</p>
+                                                    <p class="text-xs text-gray-500" data-bind="transaction.date">Yesterday, 9:00 AM</p>
+                                                </div>
+                                            </div>
+                                            <div class="text-right">
+                                                <p class="text-sm font-medium text-green-600" data-bind="transaction.amount">+$2,500.00</p>
+                                                <p class="text-xs text-gray-500" data-bind="transaction.category">Income</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="p-4 hover:bg-gray-50" data-mock="true">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center">
+                                                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                                    <i class="fas fa-gas-pump text-blue-600 text-sm"></i>
+                                                </div>
+                                                <div class="ml-3">
+                                                    <p class="text-sm font-medium text-gray-900" data-bind="transaction.description">Gas Station</p>
+                                                    <p class="text-xs text-gray-500" data-bind="transaction.date">Mar 15, 2024</p>
+                                                </div>
+                                            </div>
+                                            <div class="text-right">
+                                                <p class="text-sm font-medium text-red-600" data-bind="transaction.amount">-$35.20</p>
+                                                <p class="text-xs text-gray-500" data-bind="transaction.category">Transportation</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- @END_MAP )) -->
+                                </div>
+                            </div>
+
+                            <!-- Quick Actions -->
+                            <div class="bg-white rounded-lg shadow p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+                                <div class="space-y-3">
+                                    <button class="w-full flex items-center justify-center px-4 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors" data-event="click:addTransaction">
+                                        <i class="fas fa-plus mr-2"></i>
+                                        Add Transaction
+                                    </button>
+                                    
+                                    <button class="w-full flex items-center justify-center px-4 py-3 bg-secondary text-white rounded-lg hover:bg-green-700 transition-colors" data-event="click:createBudget">
+                                        <i class="fas fa-bullseye mr-2"></i>
+                                        Create Budget
+                                    </button>
+                                    
+                                    <button class="w-full flex items-center justify-center px-4 py-3 bg-warning text-white rounded-lg hover:bg-yellow-600 transition-colors" data-event="click:uploadReceipt">
+                                        <i class="fas fa-camera mr-2"></i>
+                                        Scan Receipt
+                                    </button>
+                                    
+                                    <button class="w-full flex items-center justify-center px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors" data-event="click:generateReport">
+                                        <i class="fas fa-file-pdf mr-2"></i>
+                                        Generate Report
+                                    </button>
+                                </div>
+
+                                <!-- AI Insights -->
+                                <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                                    <h4 class="text-sm font-semibold text-blue-900 mb-2">
+                                        <i class="fas fa-brain mr-1"></i>
+                                        AI Insights
+                                    </h4>
+                                    <p class="text-sm text-blue-800" data-mock="true">You're spending 15% more on dining out this month. Consider cooking at home to stay within budget.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            <!-- @END_COMPONENT: Dashboard Page -->
+
+            <!-- @COMPONENT: Transactions Page (Hidden by default) -->
+            <main class="flex-1 overflow-y-auto hidden" id="transactions-page">
+                <div class="py-6">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <!-- Page Header -->
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h1 class="text-2xl font-bold text-gray-900">Transactions</h1>
+                                <p class="text-gray-600">Track and manage your financial transactions</p>
+                            </div>
+                            <button class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors" data-event="click:addNewTransaction">
+                                <i class="fas fa-plus mr-2"></i>
+                                Add Transaction
+                            </button>
+                        </div>
+
+                        <!-- Filters and Search -->
+                        <div class="bg-white rounded-lg shadow p-6 mb-6">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                                    <input type="text" placeholder="Search transactions..." class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" data-event="input:searchTransactions">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                                    <select class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" data-event="change:filterByCategory">
+                                        <option value="">All Categories</option>
+                                        <option value="groceries">Groceries</option>
+                                        <option value="transportation">Transportation</option>
+                                        <option value="entertainment">Entertainment</option>
+                                        <option value="utilities">Utilities</option>
+                                        <option value="income">Income</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+                                    <select class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" data-event="change:filterByDate">
+                                        <option value="30">Last 30 days</option>
+                                        <option value="90">Last 90 days</option>
+                                        <option value="365">Last year</option>
+                                        <option value="all">All time</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                                    <select class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" data-event="change:filterByType">
+                                        <option value="">All Types</option>
+                                        <option value="income">Income</option>
+                                        <option value="expense">Expense</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Transactions Table -->
+                        <div class="bg-white rounded-lg shadow overflow-hidden">
+                            <div class="px-6 py-4 border-b border-gray-200">
+                                <div class="flex items-center justify-between">
+                                    <h3 class="text-lg font-semibold text-gray-900">Transaction History</h3>
+                                    <div class="flex space-x-2">
+                                        <button class="text-sm text-gray-500 hover:text-gray-700" data-event="click:exportTransactions">
+                                            <i class="fas fa-download mr-1"></i>
+                                            Export
+                                        </button>
+                                        <button class="text-sm text-gray-500 hover:text-gray-700" data-event="click:refreshTransactions">
+                                            <i class="fas fa-sync-alt mr-1"></i>
+                                            Refresh
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        <!-- @MAP: transactions.map(transaction => ( -->
+                                        <tr class="hover:bg-gray-50" data-mock="true">
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-bind="transaction.date">Mar 16, 2024</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="flex items-center">
+                                                    <div class="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center mr-3">
+                                                        <i class="fas fa-shopping-cart text-red-600 text-xs"></i>
+                                                    </div>
+                                                    <span class="text-sm text-gray-900" data-bind="transaction.description">Walmart Supercenter</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800" data-bind="transaction.category">Groceries</span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-bind="transaction.account">Chase Checking</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-red-600" data-bind="transaction.amount">-$87.42</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <button class="text-primary hover:text-blue-700 mr-2" data-event="click:editTransaction">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="text-red-600 hover:text-red-700" data-event="click:deleteTransaction">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        
+                                        <tr class="hover:bg-gray-50" data-mock="true">
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-bind="transaction.date">Mar 15, 2024</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="flex items-center">
+                                                    <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                                        <i class="fas fa-briefcase text-green-600 text-xs"></i>
+                                                    </div>
+                                                    <span class="text-sm text-gray-900" data-bind="transaction.description">Acme Corp Salary</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800" data-bind="transaction.category">Income</span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-bind="transaction.account">Chase Checking</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600" data-bind="transaction.amount">+$2,500.00</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <button class="text-primary hover:text-blue-700 mr-2" data-event="click:editTransaction">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="text-red-600 hover:text-red-700" data-event="click:deleteTransaction">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <!-- @END_MAP )) -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Pagination -->
+                            <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                                <div class="flex-1 flex justify-between sm:hidden">
+                                    <button class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">Previous</button>
+                                    <button class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">Next</button>
+                                </div>
+                                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                                    <div>
+                                        <p class="text-sm text-gray-700">
+                                            Showing <span class="font-medium">1</span> to <span class="font-medium">10</span> of <span class="font-medium">97</span> results
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                                            <button class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                                <i class="fas fa-chevron-left"></i>
+                                            </button>
+                                            <button class="bg-primary border-primary text-white relative inline-flex items-center px-4 py-2 border text-sm font-medium">1</button>
+                                            <button class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">2</button>
+                                            <button class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">3</button>
+                                            <button class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                                <i class="fas fa-chevron-right"></i>
+                                            </button>
+                                        </nav>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            <!-- @END_COMPONENT: Transactions Page -->
+
+            <!-- @COMPONENT: Budgets Page (Hidden by default) -->
+            <main class="flex-1 overflow-y-auto hidden" id="budgets-page">
+                <div class="py-6">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <!-- Page Header -->
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h1 class="text-2xl font-bold text-gray-900">Budgets</h1>
+                                <p class="text-gray-600">Set spending limits and track your financial goals</p>
+                            </div>
+                            <button class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors" data-event="click:createNewBudget">
+                                <i class="fas fa-plus mr-2"></i>
+                                Create Budget
+                            </button>
+                        </div>
+
+                        <!-- Budget Overview -->
+                        <div class="bg-white rounded-lg shadow p-6 mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">March 2024 Overview</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div class="text-center">
+                                    <div class="text-2xl font-bold text-gray-900" data-bind="totalBudgeted">$4,200</div>
+                                    <div class="text-sm text-gray-500">Total Budgeted</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-2xl font-bold text-red-600" data-bind="totalSpent">$3,890</div>
+                                    <div class="text-sm text-gray-500">Total Spent</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-2xl font-bold text-green-600" data-bind="totalRemaining">$310</div>
+                                    <div class="text-sm text-gray-500">Remaining</div>
+                                </div>
+                            </div>
+                            <!-- Overall Progress Bar -->
+                            <div class="mt-4">
+                                <div class="flex justify-between text-sm text-gray-600 mb-1">
+                                    <span>Overall Progress</span>
+                                    <span>92.6%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-warning h-2 rounded-full" style="width: 92.6%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Budget Categories -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <!-- @MAP: budgets.map(budget => ( -->
+                            <div class="bg-white rounded-lg shadow p-6" data-mock="true">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center">
+                                        <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-shopping-cart text-blue-600 text-sm"></i>
+                                        </div>
+                                        <h4 class="ml-3 text-lg font-semibold text-gray-900" data-bind="budget.category">Groceries</h4>
+                                    </div>
+                                    <button class="text-gray-400 hover:text-gray-600" data-event="click:editBudget">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="space-y-2 mb-4">
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-600">Spent</span>
+                                        <span class="font-medium" data-bind="budget.spent">$450.00</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-600">Budget</span>
+                                        <span class="font-medium" data-bind="budget.limit">$500.00</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-600">Remaining</span>
+                                        <span class="font-medium text-green-600" data-bind="budget.remaining">$50.00</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-2">
+                                    <div class="flex justify-between text-sm text-gray-600 mb-1">
+                                        <span>Progress</span>
+                                        <span data-bind="budget.percentage">90%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-warning h-2 rounded-full" style="width: 90%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-xs text-gray-500 mt-2">
+                                    <i class="fas fa-clock mr-1"></i>
+                                    10 days remaining in March
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white rounded-lg shadow p-6" data-mock="true">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center">
+                                        <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-gas-pump text-green-600 text-sm"></i>
+                                        </div>
+                                        <h4 class="ml-3 text-lg font-semibold text-gray-900" data-bind="budget.category">Transportation</h4>
+                                    </div>
+                                    <button class="text-gray-400 hover:text-gray-600" data-event="click:editBudget">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="space-y-2 mb-4">
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-600">Spent</span>
+                                        <span class="font-medium" data-bind="budget.spent">$180.50</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-600">Budget</span>
+                                        <span class="font-medium" data-bind="budget.limit">$300.00</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-600">Remaining</span>
+                                        <span class="font-medium text-green-600" data-bind="budget.remaining">$119.50</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-2">
+                                    <div class="flex justify-between text-sm text-gray-600 mb-1">
+                                        <span>Progress</span>
+                                        <span data-bind="budget.percentage">60%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-success h-2 rounded-full" style="width: 60%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-xs text-gray-500 mt-2">
+                                    <i class="fas fa-clock mr-1"></i>
+                                    10 days remaining in March
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white rounded-lg shadow p-6" data-mock="true">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center">
+                                        <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-film text-red-600 text-sm"></i>
+                                        </div>
+                                        <h4 class="ml-3 text-lg font-semibold text-gray-900" data-bind="budget.category">Entertainment</h4>
+                                    </div>
+                                    <button class="text-gray-400 hover:text-gray-600" data-event="click:editBudget">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="space-y-2 mb-4">
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-600">Spent</span>
+                                        <span class="font-medium" data-bind="budget.spent">$320.00</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-600">Budget</span>
+                                        <span class="font-medium" data-bind="budget.limit">$250.00</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-600">Over Budget</span>
+                                        <span class="font-medium text-red-600" data-bind="budget.remaining">$70.00</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-2">
+                                    <div class="flex justify-between text-sm text-gray-600 mb-1">
+                                        <span>Progress</span>
+                                        <span data-bind="budget.percentage">128%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-danger h-2 rounded-full" style="width: 100%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-xs text-red-500 mt-2">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                                    Over budget by $70.00
+                                </div>
+                            </div>
+                            <!-- @END_MAP )) -->
+                        </div>
+
+                        <!-- Budget Alerts -->
+                        <div class="mt-8 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <div class="flex items-center">
+                                <i class="fas fa-exclamation-triangle text-yellow-600 mr-3"></i>
+                                <div>
+                                    <h4 class="text-sm font-semibold text-yellow-800">Budget Alerts</h4>
+                                    <p class="text-sm text-yellow-700 mt-1" data-mock="true">You're approaching the limit for Entertainment (128% used). Consider reducing spending in this category.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            <!-- @END_COMPONENT: Budgets Page -->
+
+            <!-- @COMPONENT: Receipts Page (Hidden by default) -->
+            <main class="flex-1 overflow-y-auto hidden" id="receipts-page">
+                <div class="py-6">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <!-- Page Header -->
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h1 class="text-2xl font-bold text-gray-900">Receipt Scanner</h1>
+                                <p class="text-gray-600">Upload and scan receipts to automatically create transactions</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <!-- Upload Section -->
+                            <div class="bg-white rounded-lg shadow p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 mb-4">Upload Receipt</h3>
+                                
+                                <!-- File Upload Area -->
+                                <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-primary transition-colors" data-implementation="File upload dropzone component">
+                                    <div class="mb-4">
+                                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-400"></i>
+                                    </div>
+                                    <p class="text-lg text-gray-600 mb-2">Drop your receipt here or click to browse</p>
+                                    <p class="text-sm text-gray-500 mb-4">Supports JPG, PNG, PDF files up to 10MB</p>
+                                    <button class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors" data-event="click:openFileDialog">
+                                        Choose File
+                                    </button>
+                                    <input type="file" class="hidden" accept="image/*,.pdf" data-event="change:handleFileUpload" data-mock-image="true">
+                                </div>
+
+                                <!-- Camera Option -->
+                                <div class="mt-4 text-center">
+                                    <button class="text-primary hover:text-blue-700 text-sm" data-event="click:openCamera">
+                                        <i class="fas fa-camera mr-1"></i>
+                                        Take Photo with Camera
+                                    </button>
+                                </div>
+
+                                <!-- Processing Status -->
+                                <div class="mt-6 hidden" id="processing-status" data-mock="true">
+                                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                        <div class="flex items-center">
+                                            <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-primary mr-3"></div>
+                                            <span class="text-blue-800 text-sm">Processing receipt with AI OCR...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- OCR Results -->
+                            <div class="bg-white rounded-lg shadow p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 mb-4">Extracted Information</h3>
+                                
+                                <!-- Mock extracted data -->
+                                <div class="space-y-4" data-mock="true">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Merchant</label>
+                                        <input type="text" value="Walmart Supercenter" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" data-bind="ocr.merchant">
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                                        <input type="date" value="2024-03-16" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" data-bind="ocr.date">
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Total Amount</label>
+                                        <input type="number" value="87.42" step="0.01" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" data-bind="ocr.amount">
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                                        <select class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" data-bind="ocr.category">
+                                            <option value="groceries" selected>Groceries</option>
+                                            <option value="transportation">Transportation</option>
+                                            <option value="entertainment">Entertainment</option>
+                                            <option value="utilities">Utilities</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Account</label>
+                                        <select class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" data-bind="ocr.account">
+                                            <option value="chase-checking" selected>Chase Checking</option>
+                                            <option value="chase-savings">Chase Savings</option>
+                                            <option value="credit-card">Credit Card</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="mt-6 flex space-x-3">
+                                    <button class="flex-1 bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors" data-event="click:createTransaction">
+                                        <i class="fas fa-check mr-2"></i>
+                                        Create Transaction
+                                    </button>
+                                    <button class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors" data-event="click:clearForm">
+                                        <i class="fas fa-times mr-2"></i>
+                                        Clear
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Scanned Receipts -->
+                        <div class="mt-8 bg-white rounded-lg shadow">
+                            <div class="p-6 border-b border-gray-200">
+                                <h3 class="text-lg font-semibold text-gray-900">Recent Scanned Receipts</h3>
+                            </div>
+                            
+                            <div class="divide-y divide-gray-200">
+                                <!-- @MAP: recentReceipts.map(receipt => ( -->
+                                <div class="p-6 hover:bg-gray-50" data-mock="true">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center">
+                                            <div class="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center mr-4">
+                                                <i class="fas fa-receipt text-gray-500"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-medium text-gray-900" data-bind="receipt.merchant">Target Store</p>
+                                                <p class="text-xs text-gray-500" data-bind="receipt.date">Mar 15, 2024 • $45.67 • Groceries</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                Processed
+                                            </span>
+                                            <button class="text-gray-400 hover:text-gray-600" data-event="click:viewReceipt">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="p-6 hover:bg-gray-50" data-mock="true">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center">
+                                            <div class="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center mr-4">
+                                                <i class="fas fa-receipt text-gray-500"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-medium text-gray-900" data-bind="receipt.merchant">Shell Gas Station</p>
+                                                <p class="text-xs text-gray-500" data-bind="receipt.date">Mar 14, 2024 • $35.20 • Transportation</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                Processed
+                                            </span>
+                                            <button class="text-gray-400 hover:text-gray-600" data-event="click:viewReceipt">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- @END_MAP )) -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            <!-- @END_COMPONENT: Receipts Page -->
+        </div>
+    </div>
+
+    <!-- @COMPONENT: Add Transaction Modal (Hidden by default) -->
+    <div class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden" id="add-transaction-modal">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-900">Add New Transaction</h3>
+                    <button class="text-gray-400 hover:text-gray-600" data-event="click:closeModal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <form class="p-6 space-y-4" data-event="submit:handleTransactionSubmit">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <input type="text" placeholder="Enter transaction description" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" required>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+                        <input type="number" step="0.01" placeholder="0.00" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                        <select class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" required>
+                            <option value="">Select type</option>
+                            <option value="income">Income</option>
+                            <option value="expense">Expense</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                    <select class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" required>
+                        <option value="">Select category</option>
+                        <option value="groceries">Groceries</option>
+                        <option value="transportation">Transportation</option>
+                        <option value="entertainment">Entertainment</option>
+                        <option value="utilities">Utilities</option>
+                        <option value="income">Income</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Account</label>
+                    <select class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" required>
+                        <option value="">Select account</option>
+                        <option value="chase-checking">Chase Checking</option>
+                        <option value="chase-savings">Chase Savings</option>
+                        <option value="credit-card">Credit Card</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                    <input type="date" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" required>
+                </div>
+                
+                <div class="flex space-x-3 pt-4">
+                    <button type="submit" class="flex-1 bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        Add Transaction
+                    </button>
+                    <button type="button" class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors" data-event="click:closeModal">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: Add Transaction Modal -->
+
+    <!-- Toast Notification (Hidden by default) -->
+    <div class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg hidden" id="toast-notification">
+        <div class="flex items-center">
+            <i class="fas fa-check-circle mr-2"></i>
+            <span id="toast-message">Transaction added successfully!</span>
+        </div>
+    </div>
+
+    <script>
+        // TODO: Implement business logic, API calls, or state management
+        (function() {
+            // Navigation functionality
+            const navLinks = document.querySelectorAll('[data-page]');
+            const pages = {
+                'dashboard': document.getElementById('dashboard-page'),
+                'transactions': document.getElementById('transactions-page'),
+                'budgets': document.getElementById('budgets-page'),
+                'receipts': document.getElementById('receipts-page')
+            };
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetPage = this.getAttribute('data-page');
+                    
+                    // Update active nav state
+                    navLinks.forEach(nav => {
+                        nav.classList.remove('bg-primary', 'text-white');
+                        nav.classList.add('text-gray-600', 'hover:bg-gray-50', 'hover:text-gray-900');
+                    });
+                    this.classList.add('bg-primary', 'text-white');
+                    this.classList.remove('text-gray-600', 'hover:bg-gray-50', 'hover:text-gray-900');
+                    
+                    // Show target page, hide others
+                    Object.values(pages).forEach(page => {
+                        if (page) page.classList.add('hidden');
+                    });
+                    if (pages[targetPage]) {
+                        pages[targetPage].classList.remove('hidden');
+                    }
+                });
+            });
+
+            // Modal functionality
+            const addTransactionModal = document.getElementById('add-transaction-modal');
+            const addTransactionButtons = document.querySelectorAll('[data-event*="addTransaction"], [data-event*="addNewTransaction"]');
+            const closeModalButtons = document.querySelectorAll('[data-event*="closeModal"]');
+
+            addTransactionButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    addTransactionModal.classList.remove('hidden');
+                });
+            });
+
+            closeModalButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    addTransactionModal.classList.add('hidden');
+                });
+            });
+
+            // Close modal on background click
+            addTransactionModal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.add('hidden');
+                }
+            });
+
+            // Toast notification
+            function showToast(message, type = 'success') {
+                const toast = document.getElementById('toast-notification');
+                const messageEl = document.getElementById('toast-message');
+                
+                messageEl.textContent = message;
+                toast.classList.remove('hidden', 'bg-green-500', 'bg-red-500', 'bg-blue-500');
+                
+                if (type === 'success') toast.classList.add('bg-green-500');
+                else if (type === 'error') toast.classList.add('bg-red-500');
+                else if (type === 'info') toast.classList.add('bg-blue-500');
+                
+                setTimeout(() => {
+                    toast.classList.add('hidden');
+                }, 3000);
+            }
+
+            // Form submission
+            const transactionForm = document.querySelector('[data-event*="handleTransactionSubmit"]');
+            if (transactionForm) {
+                transactionForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    // TODO: Implement form validation and API call
+                    showToast('Transaction added successfully!');
+                    addTransactionModal.classList.add('hidden');
+                    this.reset();
+                });
+            }
+
+            // Real-time updates simulation
+            setInterval(() => {
+                // TODO: Implement WebSocket connection for real-time updates
+                // This would update balance, recent transactions, etc.
+            }, 30000);
+        })();
+    </script>
+</body>
+</html>
