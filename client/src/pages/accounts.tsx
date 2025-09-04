@@ -1,12 +1,14 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sidebar } from "@/components/layout/sidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import AddAccountModal from "@/components/AddAccountModal";
+
 import { 
   Plus,
   CreditCard,
@@ -22,6 +24,7 @@ import {
 export default function Accounts() {
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
+  const [showModal, setShowModal] = useState(false);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -87,11 +90,10 @@ export default function Accounts() {
     }
   };
 
-  const totalBalance = accounts?.reduce((sum: number, account: any) => {
+  const totalBalance = (Array.isArray(accounts) ? accounts : []).reduce((sum: number, account: any) => {
     const balance = parseFloat(account.balance);
-    // For credit cards, we typically show negative balances as debt
     return account.type === 'credit_card' ? sum - Math.abs(balance) : sum + balance;
-  }, 0) || 0;
+  }, 0);
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -106,7 +108,10 @@ export default function Accounts() {
                 <h1 className="text-2xl font-bold text-gray-900">Accounts</h1>
                 <p className="text-gray-600">Manage your financial accounts and track balances</p>
               </div>
-              <Button className="bg-primary hover:bg-blue-700">
+              <Button 
+                className="bg-primary hover:bg-blue-700"
+                onClick={() => setShowModal(true)}
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Account
               </Button>
@@ -121,7 +126,7 @@ export default function Accounts() {
                     ${Math.abs(totalBalance).toFixed(2)}
                   </div>
                   <p className="text-sm text-gray-500 mt-1">
-                    Across {accounts?.length || 0} active account{accounts?.length !== 1 ? 's' : ''}
+                    Across {Array.isArray(accounts) ? accounts.length : 0} active account{Array.isArray(accounts) && accounts.length !== 1 ? 's' : ''}
                   </p>
                 </div>
               </CardContent>
@@ -153,7 +158,7 @@ export default function Accounts() {
                   </Card>
                 ))}
               </div>
-            ) : accounts?.length === 0 ? (
+            ) : Array.isArray(accounts) && accounts.length === 0 ? (
               <div className="text-center py-12">
                 <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Building className="h-8 w-8 text-gray-400" />
@@ -162,14 +167,14 @@ export default function Accounts() {
                 <p className="text-gray-500 mb-4">
                   Add your first account to start tracking your finances.
                 </p>
-                <Button>
+                <Button onClick={() => setShowModal(true)}>
                   <Plus className="h-4 w-4 mr-2" />
                   Add Account
                 </Button>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {accounts?.map((account: any) => (
+                {(Array.isArray(accounts) ? accounts : []).map((account: any) => (
                   <Card key={account.id} className="hover:shadow-md transition-shadow">
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between mb-4">
@@ -233,7 +238,7 @@ export default function Accounts() {
             )}
 
             {/* Account Summary */}
-            {accounts && accounts.length > 0 && (
+            {Array.isArray(accounts) && accounts.length > 0 && (
               <div className="mt-8 grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Card>
                   <CardContent className="p-4 text-center">
@@ -272,6 +277,9 @@ export default function Accounts() {
           </div>
         </div>
       </main>
+
+      {/* Modal */}
+      <AddAccountModal open={showModal} onClose={() => setShowModal(false)} />
     </div>
   );
 }

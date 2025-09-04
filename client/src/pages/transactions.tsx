@@ -113,7 +113,7 @@ export default function Transactions() {
     }
   };
 
-  const filteredTransactions = transactions?.filter((transaction: any) => {
+  const filteredTransactions = (Array.isArray(transactions) ? transactions : []).filter((transaction: any) => {
     const matchesSearch = transaction.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = !categoryFilter || transaction.category === categoryFilter;
     const matchesType = !typeFilter || transaction.type === typeFilter;
@@ -245,7 +245,7 @@ export default function Transactions() {
                     </div>
                     <h3 className="text-lg font-medium text-gray-900 mb-2">No transactions found</h3>
                     <p className="text-gray-500 mb-4">
-                      {transactions?.length === 0 
+                      {Array.isArray(transactions) && transactions.length === 0
                         ? "Start by adding your first transaction."
                         : "Try adjusting your filters to see more results."
                       }

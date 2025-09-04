@@ -91,7 +91,7 @@ export function AddTransactionModal({ open, onOpenChange }: AddTransactionModalP
 
     const transactionData = {
       ...formData,
-      amount: formData.amount,
+      amount: parseFloat(formData.amount),
       date: new Date(formData.date),
     };
 
@@ -186,7 +186,7 @@ export function AddTransactionModal({ open, onOpenChange }: AddTransactionModalP
                 <SelectValue placeholder="Select account" />
               </SelectTrigger>
               <SelectContent>
-                {accounts?.map((account: any) => (
+                  {Array.isArray(accounts) && accounts.map((account: any) => (
                   <SelectItem key={account.id} value={account.id}>
                     {account.name}
                   </SelectItem>
