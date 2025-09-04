@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import express, { type Request, Response, NextFunction } from "express";
+import path from "path";
 import { createServer } from "http";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
@@ -10,8 +11,10 @@ import { serverConfig, validateRequiredConfig, logConfigStatus } from "./config"
 import session from "express-session";
 import cors from "cors";
 
-// ...existing code...
-
+// ESM fix for __dirname / __filename
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(express.json());
@@ -20,7 +23,7 @@ app.use(express.urlencoded({ extended: false }));
 // Add CORS middleware BEFORE session and routes
 app.use(
   cors({
-    origin: "http://localhost:5173", // Change if your frontend runs on a different port
+    origin: "http://localhost:5173", // frontend dev server
     credentials: true,
   })
 );
@@ -38,7 +41,7 @@ app.use(
 // Middleware for logging API requests
 app.use((req, res, next) => {
   const start = Date.now();
-  const path = req.path;
+  const reqPath = req.path;
   let capturedJsonResponse: Record<string, any> | undefined = undefined;
 
   const originalResJson = res.json;
@@ -49,8 +52,8 @@ app.use((req, res, next) => {
 
   res.on("finish", () => {
     const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
+    if (reqPath.startsWith("/api")) {
+      let logLine = `${req.method} ${reqPath} ${res.statusCode} in ${duration}ms`;
       if (capturedJsonResponse) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
@@ -67,7 +70,6 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Validate required configuration
   try {
     validateRequiredConfig();
     logConfigStatus();
@@ -86,10 +88,25 @@ app.use((req, res, next) => {
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
-
     res.status(status).json({ message });
     throw err;
   });
+
+if (app.get("env") !== "development") {
+  const clientDistPath = path.join(__dirname, "./public");
+
+  // Serve static assets (CSS, JS, images, etc.)
+  app.use(express.static(clientDistPath));
+
+  // Serve index.html for any route not starting with /api
+  app.get("*", (req, res, next) => {
+    if (!req.path.startsWith("/api")) {
+      res.sendFile(path.join(clientDistPath, "index.html"));
+    } else {
+      next();
+    }
+  });
+}
 
   // Setup Vite (development) or serve static build (production)
   if (app.get("env") === "development") {

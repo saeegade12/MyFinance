@@ -3,12 +3,15 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 
+import { useAuth } from "@/hooks/useAuth";
+
 export default function Login() {
   const [, setLocation] = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const { refetch, isAuthenticated } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,15 +24,32 @@ export default function Login() {
         body: JSON.stringify({ email, password }),
         credentials: "include",
       });
+
       if (!res.ok) {
         const data = await res.json();
         setError(data.message || "Login failed");
         setLoading(false);
         return;
       }
-      setLocation("/dashboard");
+
+      // Refetch auth state before redirecting
+      await refetch();
+
+      // Wait for isAuthenticated to be true before redirecting
+      const waitForAuth = async (retries = 20) => {
+        if (isAuthenticated) {
+          setLocation("/dashboard");
+        } else if (retries > 0) {
+          setTimeout(() => waitForAuth(retries - 1), 100);
+        } else {
+          setError("Login succeeded but authentication state did not update. Please refresh.");
+        }
+      };
+      waitForAuth();
+
     } catch (err) {
       setError("Network error. Please try again.");
+    } finally {
       setLoading(false);
     }
   };
@@ -58,7 +78,14 @@ export default function Login() {
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? "Signing In..." : "Sign In"}
         </Button>
-        <Button type="button" className="w-full mt-2" variant="outline" onClick={() => setLocation("/signup")}>Go to Signup</Button>
+        <Button
+          type="button"
+          className="w-full mt-2"
+          variant="outline"
+          onClick={() => setLocation("/signup")}
+        >
+          Signup
+        </Button>
       </form>
     </div>
   );

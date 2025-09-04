@@ -1,3 +1,15 @@
+// Logout endpoint
+import express from "express";
+const router = express.Router();
+
+router.post("/api/auth/logout", (req, res) => {
+  req.session?.destroy(() => {
+    res.clearCookie("connect.sid"); // adjust cookie name if needed
+    res.status(200).json({ message: "Logged out" });
+  });
+});
+
+export default router;
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer } from "ws";
@@ -83,14 +95,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const valid = await argon2.verify(user.password, password);
     if (!valid) return res.status(401).json({ message: "Invalid email or password" });
 
-    req.session.user = { 
-      id: user.id ?? "", 
-      email: user.email ?? "", 
-      firstName: user.firstName ?? "", 
-      lastName: user.lastName ?? "" 
+    req.session.user = {
+      id: user.id,
+      email: user.email,
+      first_name: user.firstName,
+      last_name: user.lastName,
+      profile_image_url: user.profileImageUrl ?? "",
+      created_at: user.createdAt,
+      updated_at: user.updatedAt,
+      password: user.password
     };
 
-    res.status(200).json({ message: "Login successful", user: { email: user.email, firstName: user.firstName, lastName: user.lastName } });
+  res.status(200).json({ message: "Login successful", user });
   });
 
   app.post("/api/auth/signup", async (req, res) => {
@@ -110,8 +126,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(201).json({ message: "User registered", user: { email: user.email, firstName: user.firstName, lastName: user.lastName } });
   });
 
-  app.get("/api/auth/user", requireSession, (req: any, res) => {
-    res.json(req.session.user);
+  app.get("/api/auth/user", requireSession, async (req: any, res) => {
+    const userId = req.session.user?.id;
+    if (!userId) return res.status(401).json({ message: "Not authenticated" });
+    try {
+      // Replace with your Drizzle query
+  const user = await storage.getUser?.(userId);
+      if (!user) return res.status(404).json({ message: "User not found" });
+      res.json(user);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
   });
 
   // --- WEBSOCKET SETUP ---
