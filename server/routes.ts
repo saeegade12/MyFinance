@@ -2,373 +2,260 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer } from "ws";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertTransactionSchema, insertAccountSchema, insertBudgetSchema, insertReceiptSchema } from "@shared/schema";
+import session from "express-session";
+import cors from "cors";
+import {
+  insertTransactionSchema,
+  insertAccountSchema,
+  insertBudgetSchema,
+  insertReceiptSchema,
+} from "@shared/schema";
 import { categorizeTransaction } from "./services/aiCategorization";
 import { processReceiptOCR } from "./services/ocrService";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import argon2 from "argon2";
+import { v4 as uuidv4 } from "uuid";
 
-// Configure multer for file uploads
-const uploadDir = path.join(process.cwd(), 'uploads');
+// --- Middleware: require session ---
+function requireSession(req: any, res: any, next: any) {
+  if (req.session && req.session.user) {
+    req.user = req.session.user;
+    next();
+  } else {
+    res.status(401).json({ message: "Not authenticated" });
+  }
+}
+
+// --- Extend express-session types ---
+declare module "express-session" {
+  interface SessionData {
+    user?: {
+      id: string;
+      email: string;
+      firstName?: string;
+      lastName?: string;
+    };
+  }
+}
+
+// --- Multer setup ---
+const uploadDir = path.join(process.cwd(), "uploads");
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
-
 const upload = multer({
   dest: uploadDir,
-  limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
-  },
+  limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
-    if (allowedTypes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Invalid file type. Only JPEG, PNG, and PDF files are allowed.'));
-    }
+    const allowedTypes = ["image/jpeg", "image/png", "image/jpg", "application/pdf"];
+    if (allowedTypes.includes(file.mimetype)) cb(null, true);
+    else cb(new Error("Invalid file type. Only JPEG, PNG, and PDF allowed."));
   },
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Auth middleware
-  await setupAuth(app);
+  app.set("trust proxy", 1);  
 
-  // WebSocket setup
-  const httpServer = createServer(app);
-  const wss = new WebSocketServer({ 
-    server: httpServer,
-    path: '/api/ws'
+  // --- express-session ---
+  app.use(
+    session({
+      secret: "super-secret-key", // move to process.env in production
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        secure: false, // true in production w/ HTTPS
+        httpOnly: true,
+        maxAge: 1000 * 60 * 60 * 24,
+      },
+    })
+  );
+
+  // --- AUTH ROUTES ---
+  app.post("/api/auth/login", async (req, res) => {
+    const { email, password } = req.body;
+    if (!email || !password) return res.status(400).json({ message: "Email and password required" });
+
+    const user = await storage.getUserByEmail?.(email);
+    if (!user || !user.password) return res.status(401).json({ message: "Invalid email or password" });
+
+    const valid = await argon2.verify(user.password, password);
+    if (!valid) return res.status(401).json({ message: "Invalid email or password" });
+
+    req.session.user = { 
+      id: user.id ?? "", 
+      email: user.email ?? "", 
+      firstName: user.firstName ?? "", 
+      lastName: user.lastName ?? "" 
+    };
+
+    res.status(200).json({ message: "Login successful", user: { email: user.email, firstName: user.firstName, lastName: user.lastName } });
   });
 
-  // Store WebSocket connections by user ID
+  app.post("/api/auth/signup", async (req, res) => {
+    const { email, password, firstName, lastName } = req.body;
+    if (!email || !password) return res.status(400).json({ message: "Email and password required" });
+
+    const existing = await storage.getUserByEmail?.(email);
+    if (existing) return res.status(409).json({ message: "User already exists" });
+
+    const hashedPassword = await argon2.hash(password);
+    const id = uuidv4();
+    const userData = { id, email, password: hashedPassword, firstName, lastName, createdAt: new Date(), updatedAt: new Date() };
+
+    const user = await storage.createUser?.(userData);
+    if (!user) return res.status(500).json({ message: "Failed to create user" });
+
+    res.status(201).json({ message: "User registered", user: { email: user.email, firstName: user.firstName, lastName: user.lastName } });
+  });
+
+  app.get("/api/auth/user", requireSession, (req: any, res) => {
+    res.json(req.session.user);
+  });
+
+  // --- WEBSOCKET SETUP ---
+  const httpServer = createServer(app);
+  const wss = new WebSocketServer({ server: httpServer, path: "/api/ws" });
   const connections = new Map<string, any>();
 
-  wss.on('connection', (ws, req) => {
-    ws.on('message', (message) => {
+  wss.on("connection", (ws) => {
+    ws.on("message", (message) => {
       try {
         const data = JSON.parse(message.toString());
-        if (data.type === 'auth' && data.userId) {
-          connections.set(data.userId, ws);
-        }
-      } catch (error) {
-        console.error('WebSocket message error:', error);
+        if (data.type === "auth" && data.userId) connections.set(data.userId, ws);
+      } catch (e) {
+        console.error("WebSocket message error:", e);
       }
     });
 
-    ws.on('close', () => {
-      // Remove connection when user disconnects
-      Array.from(connections.entries()).forEach(([userId, connection]) => {
-        if (connection === ws) {
-          connections.delete(userId);
-        }
-      });
+    ws.on("close", () => {
+      for (const [userId, conn] of connections.entries()) {
+        if (conn === ws) connections.delete(userId);
+      }
     });
   });
 
-  // Broadcast function for real-time updates
   const broadcast = (userId: string, data: any) => {
-    const connection = connections.get(userId);
-    if (connection && connection.readyState === 1) {
-      connection.send(JSON.stringify(data));
-    }
+    const conn = connections.get(userId);
+    if (conn && conn.readyState === 1) conn.send(JSON.stringify(data));
   };
 
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
+  // --- ACCOUNTS ---
+  app.get("/api/accounts", requireSession, async (req: any, res) => {
+    const accounts = await storage.getUserAccounts(req.session.user.id);
+    res.json(accounts);
   });
 
-  // Account routes
-  app.get('/api/accounts', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const accounts = await storage.getUserAccounts(userId);
-      res.json(accounts);
-    } catch (error) {
-      console.error("Error fetching accounts:", error);
-      res.status(500).json({ message: "Failed to fetch accounts" });
-    }
+  app.post("/api/accounts", requireSession, async (req: any, res) => {
+    const accountData = insertAccountSchema.parse({ ...req.body, userId: req.session.user.id });
+    const account = await storage.createAccount(accountData);
+    res.status(201).json(account);
   });
 
-  app.post('/api/accounts', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const accountData = insertAccountSchema.parse({ ...req.body, userId });
-      const account = await storage.createAccount(accountData);
-      res.status(201).json(account);
-    } catch (error) {
-      console.error("Error creating account:", error);
-      res.status(400).json({ message: "Failed to create account" });
-    }
+  app.put("/api/accounts/:id", requireSession, async (req: any, res) => {
+    const account = await storage.updateAccount(req.params.id, insertAccountSchema.partial().parse(req.body));
+    res.json(account);
   });
 
-  app.put('/api/accounts/:id', isAuthenticated, async (req: any, res) => {
-    try {
-      const { id } = req.params;
-      const accountData = insertAccountSchema.partial().parse(req.body);
-      const account = await storage.updateAccount(id, accountData);
-      res.json(account);
-    } catch (error) {
-      console.error("Error updating account:", error);
-      res.status(400).json({ message: "Failed to update account" });
-    }
+  app.delete("/api/accounts/:id", requireSession, async (req: any, res) => {
+    await storage.deleteAccount(req.params.id);
+    res.status(204).send();
   });
 
-  app.delete('/api/accounts/:id', isAuthenticated, async (req: any, res) => {
-    try {
-      const { id } = req.params;
-      await storage.deleteAccount(id);
-      res.status(204).send();
-    } catch (error) {
-      console.error("Error deleting account:", error);
-      res.status(400).json({ message: "Failed to delete account" });
-    }
+  // --- TRANSACTIONS ---
+  app.get("/api/transactions", requireSession, async (req: any, res) => {
+    const { category, accountId, startDate, endDate, limit } = req.query;
+    const userId = req.session.user.id;
+    let transactions;
+
+    if (category) transactions = await storage.getTransactionsByCategory(userId, category as string);
+    else if (accountId) transactions = await storage.getTransactionsByAccount(accountId as string);
+    else if (startDate && endDate) transactions = await storage.getTransactionsByDateRange(userId, new Date(startDate as string), new Date(endDate as string));
+    else transactions = await storage.getUserTransactions(userId, limit ? parseInt(limit as string) : 50);
+
+    res.json(transactions);
   });
 
-  // Transaction routes
-  app.get('/api/transactions', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const { limit, category, accountId, startDate, endDate } = req.query;
-      
-      let transactions;
-      if (category) {
-        transactions = await storage.getTransactionsByCategory(userId, category as string);
-      } else if (accountId) {
-        transactions = await storage.getTransactionsByAccount(accountId as string);
-      } else if (startDate && endDate) {
-        transactions = await storage.getTransactionsByDateRange(
-          userId,
-          new Date(startDate as string),
-          new Date(endDate as string)
-        );
-      } else {
-        transactions = await storage.getUserTransactions(userId, limit ? parseInt(limit as string) : 50);
-      }
-      
-      res.json(transactions);
-    } catch (error) {
-      console.error("Error fetching transactions:", error);
-      res.status(500).json({ message: "Failed to fetch transactions" });
+  app.post("/api/transactions", requireSession, async (req: any, res) => {
+    let transactionData = insertTransactionSchema.parse({ ...req.body, userId: req.session.user.id });
+    if (!req.body.category || req.body.category === "other") {
+      transactionData = { ...transactionData, category: await categorizeTransaction(transactionData.description), aiCategorized: true };
     }
+    const transaction = await storage.createTransaction(transactionData);
+    broadcast(req.session.user.id, { type: "transaction_created", data: transaction });
+    res.status(201).json(transaction);
   });
 
-  app.post('/api/transactions', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      let transactionData = insertTransactionSchema.parse({ ...req.body, userId });
-      
-      // Apply AI categorization if not explicitly provided
-      if (!req.body.category || req.body.category === 'other') {
-        const category = await categorizeTransaction(transactionData.description);
-        transactionData = { ...transactionData, category, aiCategorized: true };
-      }
-      
-      const transaction = await storage.createTransaction(transactionData);
-      
-      // Broadcast real-time update
-      broadcast(userId, {
-        type: 'transaction_created',
-        data: transaction,
-      });
-      
-      res.status(201).json(transaction);
-    } catch (error) {
-      console.error("Error creating transaction:", error);
-      res.status(400).json({ message: "Failed to create transaction" });
-    }
+  app.put("/api/transactions/:id", requireSession, async (req: any, res) => {
+    const transaction = await storage.updateTransaction(req.params.id, insertTransactionSchema.partial().parse(req.body));
+    broadcast(req.session.user.id, { type: "transaction_updated", data: transaction });
+    res.json(transaction);
   });
 
-  app.put('/api/transactions/:id', isAuthenticated, async (req: any, res) => {
-    try {
-      const { id } = req.params;
-      const transactionData = insertTransactionSchema.partial().parse(req.body);
-      const transaction = await storage.updateTransaction(id, transactionData);
-      
-      // Broadcast real-time update
-      const userId = req.user.claims.sub;
-      broadcast(userId, {
-        type: 'transaction_updated',
-        data: transaction,
-      });
-      
-      res.json(transaction);
-    } catch (error) {
-      console.error("Error updating transaction:", error);
-      res.status(400).json({ message: "Failed to update transaction" });
-    }
+  app.delete("/api/transactions/:id", requireSession, async (req: any, res) => {
+    await storage.deleteTransaction(req.params.id);
+    broadcast(req.session.user.id, { type: "transaction_deleted", data: { id: req.params.id } });
+    res.status(204).send();
   });
 
-  app.delete('/api/transactions/:id', isAuthenticated, async (req: any, res) => {
-    try {
-      const { id } = req.params;
-      await storage.deleteTransaction(id);
-      
-      // Broadcast real-time update
-      const userId = req.user.claims.sub;
-      broadcast(userId, {
-        type: 'transaction_deleted',
-        data: { id },
-      });
-      
-      res.status(204).send();
-    } catch (error) {
-      console.error("Error deleting transaction:", error);
-      res.status(400).json({ message: "Failed to delete transaction" });
-    }
+  // --- BUDGETS ---
+  app.get("/api/budgets", requireSession, async (req: any, res) => {
+    res.json(await storage.getBudgetsWithSpending(req.session.user.id));
   });
 
-  // Budget routes
-  app.get('/api/budgets', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const budgets = await storage.getBudgetsWithSpending(userId);
-      res.json(budgets);
-    } catch (error) {
-      console.error("Error fetching budgets:", error);
-      res.status(500).json({ message: "Failed to fetch budgets" });
-    }
+  app.post("/api/budgets", requireSession, async (req: any, res) => {
+    const budget = await storage.createBudget(insertBudgetSchema.parse({ ...req.body, userId: req.session.user.id }));
+    res.status(201).json(budget);
   });
 
-  app.post('/api/budgets', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const budgetData = insertBudgetSchema.parse({ ...req.body, userId });
-      const budget = await storage.createBudget(budgetData);
-      res.status(201).json(budget);
-    } catch (error) {
-      console.error("Error creating budget:", error);
-      res.status(400).json({ message: "Failed to create budget" });
-    }
+  app.put("/api/budgets/:id", requireSession, async (req: any, res) => {
+    res.json(await storage.updateBudget(req.params.id, insertBudgetSchema.partial().parse(req.body)));
   });
 
-  app.put('/api/budgets/:id', isAuthenticated, async (req: any, res) => {
-    try {
-      const { id } = req.params;
-      const budgetData = insertBudgetSchema.partial().parse(req.body);
-      const budget = await storage.updateBudget(id, budgetData);
-      res.json(budget);
-    } catch (error) {
-      console.error("Error updating budget:", error);
-      res.status(400).json({ message: "Failed to update budget" });
-    }
+  app.delete("/api/budgets/:id", requireSession, async (req: any, res) => {
+    await storage.deleteBudget(req.params.id);
+    res.status(204).send();
   });
 
-  app.delete('/api/budgets/:id', isAuthenticated, async (req: any, res) => {
-    try {
-      const { id } = req.params;
-      await storage.deleteBudget(id);
-      res.status(204).send();
-    } catch (error) {
-      console.error("Error deleting budget:", error);
-      res.status(400).json({ message: "Failed to delete budget" });
-    }
+  // --- RECEIPTS ---
+  app.get("/api/receipts", requireSession, async (req: any, res) => {
+    res.json(await storage.getUserReceipts(req.session.user.id));
   });
 
-  // Receipt routes
-  app.get('/api/receipts', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const receipts = await storage.getUserReceipts(userId);
-      res.json(receipts);
-    } catch (error) {
-      console.error("Error fetching receipts:", error);
-      res.status(500).json({ message: "Failed to fetch receipts" });
-    }
+  app.post("/api/receipts/upload", upload.single("receipt"), requireSession, async (req: any, res) => {
+    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+
+    const receipt = await storage.createReceipt({ userId: req.session.user.id, fileName: req.file.originalname, filePath: req.file.path });
+
+    processReceiptOCR(receipt.id, req.file.path)
+      .then(async (ocrResult) => {
+        await storage.updateReceipt(receipt.id, { ocrText: ocrResult.text, ocrData: ocrResult.data, processedAt: new Date() });
+        broadcast(req.session.user.id, { type: "receipt_processed", data: { receiptId: receipt.id, ocrResult } });
+      })
+      .catch((err) => console.error("OCR failed:", err));
+
+    res.status(201).json(receipt);
   });
 
-  app.post('/api/receipts/upload', isAuthenticated, upload.single('receipt'), async (req: any, res) => {
-    try {
-      if (!req.file) {
-        return res.status(400).json({ message: "No file uploaded" });
-      }
+  // --- ANALYTICS ---
+  app.get("/api/analytics/dashboard", requireSession, async (req: any, res) => {
+    const userId = req.session.user.id;
+    const now = new Date();
+    const [totalBalance, monthlyIncome, monthlyExpenses] = await Promise.all([
+      storage.getTotalBalance(userId),
+      storage.getMonthlyIncome(userId, now.getMonth() + 1, now.getFullYear()),
+      storage.getMonthlyExpenses(userId, now.getMonth() + 1, now.getFullYear()),
+    ]);
 
-      const userId = req.user.claims.sub;
-      const receiptData = {
-        userId,
-        fileName: req.file.originalname,
-        filePath: req.file.path,
-      };
-
-      const receipt = await storage.createReceipt(receiptData);
-      
-      // Process OCR in background
-      processReceiptOCR(receipt.id, req.file.path)
-        .then(async (ocrResult) => {
-          await storage.updateReceipt(receipt.id, {
-            ocrText: ocrResult.text,
-            ocrData: ocrResult.data,
-            processedAt: new Date(),
-          });
-          
-          // Broadcast OCR completion
-          broadcast(userId, {
-            type: 'receipt_processed',
-            data: { receiptId: receipt.id, ocrResult },
-          });
-        })
-        .catch((error) => {
-          console.error('OCR processing failed:', error);
-        });
-
-      res.status(201).json(receipt);
-    } catch (error) {
-      console.error("Error uploading receipt:", error);
-      res.status(500).json({ message: "Failed to upload receipt" });
-    }
+    res.json({ totalBalance, monthlyIncome, monthlyExpenses, budgetRemaining: (parseFloat(monthlyIncome) - parseFloat(monthlyExpenses)).toFixed(2) });
   });
 
-  // Analytics routes
-  app.get('/api/analytics/dashboard', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const currentDate = new Date();
-      const currentMonth = currentDate.getMonth() + 1;
-      const currentYear = currentDate.getFullYear();
-
-      const [totalBalance, monthlyIncome, monthlyExpenses] = await Promise.all([
-        storage.getTotalBalance(userId),
-        storage.getMonthlyIncome(userId, currentMonth, currentYear),
-        storage.getMonthlyExpenses(userId, currentMonth, currentYear),
-      ]);
-
-      const budgetRemaining = (parseFloat(monthlyIncome) - parseFloat(monthlyExpenses)).toFixed(2);
-
-      res.json({
-        totalBalance,
-        monthlyIncome,
-        monthlyExpenses,
-        budgetRemaining,
-      });
-    } catch (error) {
-      console.error("Error fetching dashboard analytics:", error);
-      res.status(500).json({ message: "Failed to fetch analytics" });
-    }
-  });
-
-  app.get('/api/analytics/category-spending', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const { startDate, endDate } = req.query;
-      
-      const start = startDate ? new Date(startDate as string) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-      const end = endDate ? new Date(endDate as string) : new Date();
-      
-      const categorySpending = await storage.getCategorySpending(userId, start, end);
-      res.json(categorySpending);
-    } catch (error) {
-      console.error("Error fetching category spending:", error);
-      res.status(500).json({ message: "Failed to fetch category spending" });
-    }
+  app.get("/api/analytics/category-spending", requireSession, async (req: any, res) => {
+    const { startDate, endDate } = req.query;
+    const start = startDate ? new Date(startDate as string) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const end = endDate ? new Date(endDate as string) : new Date();
+    res.json(await storage.getCategorySpending(req.session.user.id, start, end));
   });
 
   return httpServer;

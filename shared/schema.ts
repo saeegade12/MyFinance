@@ -29,12 +29,14 @@ export const sessions = pgTable(
 export const users = pgTable("users", {
   id: varchar("id").primaryKey(),
   email: varchar("email").unique(),
+  password: varchar("password"), // <-- Add this line
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
+;
 
 // Accounts table
 export const accounts = pgTable("accounts", {
@@ -173,3 +175,4 @@ export type BudgetWithSpending = Budget & {
   remaining: string;
   percentage: number;
 };
+

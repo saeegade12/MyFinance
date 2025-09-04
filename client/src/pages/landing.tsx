@@ -1,25 +1,36 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, Shield, Zap, BarChart } from "lucide-react";
 
 export default function Landing() {
   const [, setLocation] = useLocation();
   const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
-  const handleLogin = async () => {
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
+    setError("");
     try {
-      // Replace this with your real login endpoint
-      const res = await fetch("/api/login", { credentials: "include" });
-      if (!res.ok) throw new Error("Login failed");
-
-      // Redirect to dashboard after login
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.message || "Login failed");
+        setLoading(false);
+        return;
+      }
       setLocation("/dashboard");
     } catch (err) {
-      console.error(err);
-      alert("Login failed. Please try again.");
+      setError("Network error. Please try again.");
       setLoading(false);
     }
   };
@@ -35,24 +46,41 @@ export default function Landing() {
             </div>
             <h1 className="text-2xl font-bold text-gray-900">FinanceAI Pro</h1>
           </div>
-          <Button onClick={handleLogin} size="lg" disabled={loading}>
-            {loading ? "Signing In..." : "Sign In"}
-          </Button>
         </div>
       </header>
 
-      {/* Hero Section */}
+      {/* Hero Section with Login Form */}
       <main className="container mx-auto px-4 py-16">
-        <div className="text-center mb-16">
-          <h2 className="text-5xl font-bold text-gray-900 mb-6">
+        <div className="flex flex-col items-center mb-16">
+          <h2 className="text-5xl font-bold text-gray-900 mb-6 text-center">
             Smart Finance Management with <span className="text-primary">AI Intelligence</span>
           </h2>
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto text-center">
             Track expenses, manage budgets, and get AI-powered insights to make smarter financial decisions.
           </p>
-          <Button onClick={handleLogin} size="lg" className="text-lg px-8 py-4" disabled={loading}>
-            {loading ? "Signing In..." : "Get Started Free"}
-          </Button>
+          <form className="bg-white p-6 rounded shadow-md w-80" onSubmit={handleLogin}>
+            <Input
+              type="email"
+              placeholder="Email"
+              className="mb-3"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+            />
+            <Input
+              type="password"
+              placeholder="Password"
+              className="mb-3"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required
+            />
+            {error && <div className="text-red-500 mb-2 text-sm">{error}</div>}
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Signing In..." : "Sign In"}
+            </Button>
+            <Button type="button" className="w-full mt-2" variant="outline" onClick={() => setLocation("/signup")}>Go to Signup</Button>
+          </form>
         </div>
 
         {/* Features Grid */}
@@ -122,9 +150,7 @@ export default function Landing() {
           <p className="text-lg text-gray-600 mb-6">
             Join thousands of users who have transformed their financial management with FinanceAI Pro.
           </p>
-          <Button onClick={handleLogin} size="lg" className="text-lg px-8 py-4" disabled={loading}>
-            {loading ? "Signing In..." : "Start Your Financial Journey"}
-          </Button>
+          {/* The login form above provides the login functionality */}
         </div>
       </main>
 

@@ -4,6 +4,8 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Landing from "@/pages/landing";
+import Signup from "@/pages/signup";
+import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
 import Transactions from "@/pages/transactions";
 import Budgets from "@/pages/budgets";
@@ -21,6 +23,8 @@ function Router() {
     <Switch>
       {/* Landing page is always accessible */}
       <Route path="/" component={Landing} />
+      <Route path="/signup" component={Signup} />
+      <Route path="/login" component={Login} /> {/* <-- Add this line */}
 
       {/* Protected routes */}
       {isAuthenticated && (

@@ -7,9 +7,33 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { serverConfig, validateRequiredConfig, logConfigStatus } from "./config";
 
+import session from "express-session";
+import cors from "cors";
+
+// ...existing code...
+
+
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Add CORS middleware BEFORE session and routes
+app.use(
+  cors({
+    origin: "http://localhost:5173", // Change if your frontend runs on a different port
+    credentials: true,
+  })
+);
+
+// Add express-session middleware here
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "your-secret",
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false }, // set to true if using HTTPS
+  })
+);
 
 // Middleware for logging API requests
 app.use((req, res, next) => {

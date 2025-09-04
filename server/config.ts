@@ -7,14 +7,14 @@ dotenv.config();
 // Environment variable validation schema
 const envSchema = z.object({
   // Database
-  DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
+  DATABASE_URL: z.string().min(1, "postgresql://neondb_owner:npg_OKt6axr7VCyQ@ep-rapid-art-a1e02v55-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"),
   
   // Server
   PORT: z.string().transform(val => parseInt(val, 10)).default("5000"),
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
   
   // Authentication & Session
-  SESSION_SECRET: z.string().min(32, "SESSION_SECRET must be at least 32 characters"),
+  SESSION_SECRET: z.string().min(32, "930d6c68e87810385c1f81a5636863b24a7bcbe32d90f7c90195b755b5324f67"),
   REPLIT_DOMAINS: z.string().optional(),
   ISSUER_URL: z.string().url().optional(),
   REPL_ID: z.string().optional(),
@@ -78,8 +78,8 @@ export const serverConfig = {
 // Authentication configuration
 export const authConfig = {
   sessionSecret: config.SESSION_SECRET,
-  replitDomains: config.REPLIT_DOMAINS?.split(',').map(domain => domain.trim()) || [],
-  issuerUrl: config.ISSUER_URL || 'https://replit.com/oidc',
+  // replitDomains: config.REPLIT_DOMAINS?.split(',').map(domain => domain.trim()) || [],
+  // issuerUrl: config.ISSUER_URL || 'https://replit.com/oidc',
   replId: config.REPL_ID,
 };
 
@@ -132,9 +132,9 @@ export function validateRequiredConfig() {
     errors.push("SESSION_SECRET must be at least 32 characters long");
   }
   
-  if (isProduction && !config.REPLIT_DOMAINS) {
-    errors.push("REPLIT_DOMAINS is required in production");
-  }
+  // if (isProduction && !config.REPLIT_DOMAINS) {
+  //   errors.push("REPLIT_DOMAINS is required in production");
+  // }
   
   if (errors.length > 0) {
     throw new Error(`Configuration validation failed:\n${errors.join('\n')}`);
